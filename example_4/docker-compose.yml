@@ -1,0 +1,27 @@
+services:
+  nodejs:
+    build:
+      context: ./app_node
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./app_node:/app
+    working_dir: /app
+    command: npm run start
+
+  python_app:
+    build:
+      context: ./app_python
+      dockerfile: Dockerfile
+    
+    environment:
+      - PYTHONUNBUFFERED=1
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./app_python:/app
+    working_dir: /app
+    command: uvicorn main:app --host 0.0.0.0 --port 8000 --reload
+    depends_on:
+      - nodejs

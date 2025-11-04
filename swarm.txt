@@ -1,0 +1,5 @@
+docker stack deploy -c stack.yml "my-stack"
+
+docker stack services "my-stack"
+
+docker stack ps "my-stack"

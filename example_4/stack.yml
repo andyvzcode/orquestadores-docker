@@ -1,0 +1,71 @@
+version: '3.8'
+
+services:
+  nodejs:
+    # NOTA: Para Swarm, primero debes construir y pushear la imagen a un registry
+    # docker build -t tu-usuario/nodejs-app:latest ./app_node
+    # docker push tu-usuario/nodejs-app:latest
+    image: node:18-alpine
+    ports:
+      - "3000:3000"
+    working_dir: /app
+    # En producción, montar código con volumes no es recomendado en Swarm
+    # Mejor construir la imagen con el código incluido
+    volumes:
+      - ./app_node:/app
+    command: sh -c "npm install && npm run start"
+    deploy:
+      replicas: 2
+      restart_policy:
+        condition: on-failure
+        delay: 5s
+        max_attempts: 3
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 512M
+        reservations:
+          cpus: '0.25'
+          memory: 256M
+      update_config:
+        parallelism: 1
+        delay: 10s
+        failure_action: rollback
+
+  python_app:
+    # NOTA: Para Swarm, primero debes construir y pushear la imagen a un registry
+    # docker build -t tu-usuario/python-app:latest ./app_python
+    # docker push tu-usuario/python-app:latest
+    image: python:3.14-slim
+    ports:
+      - "8000:8000"
+    environment:
+      - PYTHONUNBUFFERED=1
+    working_dir: /app
+    # En producción, montar código con volumes no es recomendado en Swarm
+    # Mejor construir la imagen con el código incluido
+    volumes:
+      - ./app_python:/app
+    command: sh -c "pip install -r requirements.txt && uvicorn main:app --host 0.0.0.0 --port 8000"
+    deploy:
+      replicas: 2
+      restart_policy:
+        condition: on-failure
+        delay: 5s
+        max_attempts: 3
+      resources:
+        limits:
+          cpus: '1.0'
+          memory: 512M
+        reservations:
+          cpus: '0.5'
+          memory: 256M
+      update_config:
+        parallelism: 1
+        delay: 10s
+        failure_action: rollback
+
+networks:
+  default:
+    driver: overlay
+
