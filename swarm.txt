@@ -1,4 +1,5 @@
 docker stack deploy -c stack.yml "my-stack"
+docker stack deploy -c docker-compose.prod.yml "my-stack"
 
 docker stack services "my-stack"
 
